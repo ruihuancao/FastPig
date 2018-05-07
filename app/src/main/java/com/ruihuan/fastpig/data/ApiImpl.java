@@ -1,6 +1,6 @@
 package com.ruihuan.fastpig.data;
 
-import com.ruihuan.commonpig.log.LogPig;
+import com.ruihuan.commonpig.log.LogHelper;
 import com.ruihuan.fastpig.DataEvent;
 import com.ruihuan.storagepig.db.DBManager;
 import com.ruihuan.storagepig.db.entity.CacheEntity;
@@ -10,7 +10,6 @@ import com.ruihuan.storagepig.http.lisenter.StringLisenter;
 import com.ruihuan.thirdpig.eventbus.EventBusManager;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -35,12 +34,12 @@ public class ApiImpl implements Api {
     private Observer<String> observer = new Observer<String>() {
         @Override
         public void onSubscribe(Disposable d) {
-            LogPig.d("onSubscribe");
+            LogHelper.d("onSubscribe");
         }
 
         @Override
         public void onNext(String s) {
-            LogPig.d(s);
+            LogHelper.d(s);
             EventBusManager.post(new DataEvent(s));
         }
 
@@ -51,7 +50,7 @@ public class ApiImpl implements Api {
 
         @Override
         public void onComplete() {
-            LogPig.d("onComplete");
+            LogHelper.d("onComplete");
         }
     };
 
@@ -66,12 +65,12 @@ public class ApiImpl implements Api {
         http.get(url, new StringLisenter() {
             @Override
             public void onFailure(int statusCode, String errorMessage) {
-                LogPig.e(errorMessage);
+                LogHelper.e(errorMessage);
             }
 
             @Override
             public void onResponse(String response) {
-                LogPig.d(response);
+                LogHelper.d(response);
             }
         });
     }
@@ -110,7 +109,7 @@ public class ApiImpl implements Api {
                 @Override
                 public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                     String data = db.getCacheData(url);
-                    LogPig.d("缓存结果");
+                    LogHelper.d("缓存结果");
                     emitter.onNext(data);
                     emitter.onComplete();
                 }
@@ -123,7 +122,7 @@ public class ApiImpl implements Api {
                     .doOnNext(new Consumer<String>() {
                         @Override
                         public void accept(String s) throws Exception {
-                            LogPig.d("网络结果缓存");
+                            LogHelper.d("网络结果缓存");
                             CacheEntity cacheEntity = new CacheEntity();
                             cacheEntity.setCacheTime(System.currentTimeMillis());
                             cacheEntity.setData(s);

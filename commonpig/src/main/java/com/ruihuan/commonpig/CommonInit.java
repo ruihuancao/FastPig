@@ -2,8 +2,8 @@ package com.ruihuan.commonpig;
 
 import android.content.Context;
 
-import com.blankj.utilcode.util.Utils;
-import com.ruihuan.commonpig.log.LogPig;
+import com.ruihuan.commonpig.log.LogHelper;
+import com.ruihuan.commonpig.utils.UtilHelper;
 
 /**
  * Description:
@@ -13,7 +13,7 @@ import com.ruihuan.commonpig.log.LogPig;
 public class CommonInit {
 
     public static void init(Context context){
-        Utils.init(context);
-        LogPig.init();
+        UtilHelper.init(context);
+        LogHelper.init();
     }
 }

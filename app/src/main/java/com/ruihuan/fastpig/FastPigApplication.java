@@ -2,7 +2,7 @@ package com.ruihuan.fastpig;
 
 import android.app.Application;
 
-import com.ruihuan.commonpig.log.LogPig;
+import com.ruihuan.commonpig.log.LogHelper;
 import com.ruihuan.storagepig.StorageInit;
 
 /**
@@ -16,6 +16,6 @@ public class FastPigApplication extends Application {
     public void onCreate() {
         super.onCreate();
         StorageInit.init(getApplicationContext());
-        LogPig.setShowLog(true);
+        LogHelper.setShowLog(true);
     }
 }

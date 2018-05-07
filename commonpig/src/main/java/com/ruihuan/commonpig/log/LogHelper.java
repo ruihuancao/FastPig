@@ -7,9 +7,9 @@ import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
 import com.orhanobut.logger.PrettyFormatStrategy;
 
-public class LogPig {
+public class LogHelper {
 
-    public static final String TAG = "LogPig";
+    public static final String TAG = "LogHelper";
 
     private static boolean showLog = false;
 
@@ -26,7 +26,7 @@ public class LogPig {
     }
 
     public static void setShowLog(boolean showLog) {
-        LogPig.showLog = showLog;
+        LogHelper.showLog = showLog;
     }
 
     public static void d(String message){

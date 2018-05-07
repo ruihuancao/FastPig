@@ -7,21 +7,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.ruihuan.commonpig.premission.PremissionHelper;
 import com.ruihuan.fastpig.data.Api;
-import com.ruihuan.fastpig.data.BaseBean;
 import com.ruihuan.fastpig.data.DataManager;
-import com.ruihuan.fastpig.data.PoetryDataBean;
-import com.ruihuan.fastpig.data.TestBean;
-import com.ruihuan.commonpig.log.LogPig;
-import com.ruihuan.storagepig.http.lisenter.GsonLisenter;
 import com.ruihuan.thirdpig.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.lang.reflect.Type;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        PremissionHelper.requestCamera(new PremissionHelper.OnPermissionGrantedListener() {
+            @Override
+            public void onPermissionGranted() {
+
+            }
+        });
 
     }
 

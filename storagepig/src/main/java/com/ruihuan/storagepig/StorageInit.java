@@ -4,7 +4,7 @@ package com.ruihuan.storagepig;
 import android.content.Context;
 
 import com.ruihuan.commonpig.CommonInit;
-import com.ruihuan.commonpig.log.LogPig;
+import com.ruihuan.commonpig.log.LogHelper;
 import com.ruihuan.storagepig.config.AppConfig;
 import com.ruihuan.storagepig.db.DBManager;
 import com.ruihuan.storagepig.http.HttpManager;
@@ -21,6 +21,6 @@ public class StorageInit {
         AppConfig.getInstance().init(context);
         HttpManager.getInstance().init(context);
         DBManager.getInstance().init(context);
-        LogPig.d("storage init");
+        LogHelper.d("storage init");
     }
 }
