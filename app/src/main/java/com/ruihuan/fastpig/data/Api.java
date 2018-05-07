@@ -1,7 +1,8 @@
 package com.ruihuan.fastpig.data;
 
-import com.ruihuan.storagepig.http.lisenter.GsonLisenter;
-import com.ruihuan.storagepig.http.lisenter.StringLisenter;
+
+import com.ruihuan.common.storage.http.lisenter.GsonLisenter;
+import com.ruihuan.common.storage.http.lisenter.StringLisenter;
 
 /**
  * Description:

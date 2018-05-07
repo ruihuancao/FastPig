@@ -3,19 +3,18 @@ package com.ruihuan.fastpig;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.ruihuan.commonpig.premission.PremissionHelper;
+import com.ruihuan.common.helper.PremissionHelper;
+import com.ruihuan.common.view.base.BaseActivity;
 import com.ruihuan.fastpig.data.Api;
 import com.ruihuan.fastpig.data.DataManager;
-import com.ruihuan.thirdpig.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private TextView mTextMessage;
     private StringBuilder stringBuilder = new StringBuilder();
@@ -42,11 +41,17 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        EventBusManager.register(this);
+    protected int getLayoutId() {
+        return R.layout.activity_main;
+    }
 
+    @Override
+    protected void initParams() {
+        Bundle bundle = getIntent().getExtras();
+    }
+
+    @Override
+    protected void initView() {
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -56,13 +61,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     @Override
-    protected void onDestroy() {
-        EventBusManager.unregister(this);
-        super.onDestroy();
+    protected void initData() {
+
     }
 
     private void testHttp(){

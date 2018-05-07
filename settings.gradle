@@ -1,1 +1,1 @@
-include ':app', ':storagepig', ':commonpig', ':thirdpig'
+include ':app', ':common'
