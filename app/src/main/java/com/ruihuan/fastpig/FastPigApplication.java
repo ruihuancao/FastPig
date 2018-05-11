@@ -2,9 +2,9 @@ package com.ruihuan.fastpig;
 
 import android.app.Application;
 
-import com.ruihuan.common.CommonInit;
-import com.ruihuan.common.helper.LogHelper;
-import com.ruihuan.common.storage.StorageInit;
+import com.mob.MobSDK;
+import com.ruihuan.fastcommon.CommonInit;
+import com.ruihuan.fastcommon.helper.LogHelper;
 
 /**
  * Description:
@@ -18,5 +18,6 @@ public class FastPigApplication extends Application {
         super.onCreate();
         CommonInit.init(getApplicationContext());
         LogHelper.setShowLog(true);
+        MobSDK.init(this);
     }
 }

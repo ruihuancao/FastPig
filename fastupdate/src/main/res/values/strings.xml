@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FastUpdate</string>
+    <string name="fastupdate_ignore">忽略此版本</string>
+    <string name="fastupdate_update">升级</string>
+    <string name="fastupdate_title">是否升级到%s版本？</string>
+    <string name="fastupdate_size">新版本大小：%s \n\n</string>
+    <string name="fastupdate_download_cancel">取消下载</string>
+    <string name="fastupdate_install">安装</string>
+    <string name="fastupdate_premission_tip">请授权访问存储空间权限，否则App无法更新</string>
+</resources>

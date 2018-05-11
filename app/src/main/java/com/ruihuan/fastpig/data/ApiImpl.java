@@ -1,12 +1,12 @@
 package com.ruihuan.fastpig.data;
 
-import com.ruihuan.common.event.EventBusManager;
-import com.ruihuan.common.helper.LogHelper;
-import com.ruihuan.common.storage.db.DBManager;
-import com.ruihuan.common.storage.db.entity.CacheEntity;
-import com.ruihuan.common.storage.http.HttpManager;
-import com.ruihuan.common.storage.http.lisenter.GsonLisenter;
-import com.ruihuan.common.storage.http.lisenter.StringLisenter;
+import com.ruihuan.fastcommon.event.EventBusManager;
+import com.ruihuan.fastcommon.helper.LogHelper;
+import com.ruihuan.fastcommon.storage.db.DBManager;
+import com.ruihuan.fastcommon.storage.db.entity.CacheEntity;
+import com.ruihuan.fastcommon.storage.http.HttpManager;
+import com.ruihuan.fastcommon.storage.http.lisenter.GsonLisenter;
+import com.ruihuan.fastcommon.storage.http.lisenter.StringLisenter;
 import com.ruihuan.fastpig.DataEvent;
 
 

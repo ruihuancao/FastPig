@@ -17,6 +17,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -26,6 +27,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/title_home"
                 />
+
+            <Button
+                android:text="更新"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
         </LinearLayout>
     </ScrollView>
 
