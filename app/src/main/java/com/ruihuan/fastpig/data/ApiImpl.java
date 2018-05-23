@@ -1,9 +1,12 @@
 package com.ruihuan.fastpig.data;
 
+import android.text.TextUtils;
+
 import com.ruihuan.fastcommon.event.EventBusManager;
 import com.ruihuan.fastcommon.helper.LogHelper;
 import com.ruihuan.fastcommon.storage.db.DBManager;
 import com.ruihuan.fastcommon.storage.db.entity.CacheEntity;
+import com.ruihuan.fastcommon.storage.help.StorageHelper;
 import com.ruihuan.fastcommon.storage.http.HttpManager;
 import com.ruihuan.fastcommon.storage.http.lisenter.GsonLisenter;
 import com.ruihuan.fastcommon.storage.http.lisenter.StringLisenter;
@@ -11,14 +14,17 @@ import com.ruihuan.fastpig.DataEvent;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -60,6 +66,31 @@ public class ApiImpl implements Api {
         this.db = DBManager.getInstance();
     }
 
+
+    private Observable<String> getCacheOrNet(final String url, final Map<String, String> params,
+                                            final Map<String, String> headers) {
+        final String key = StorageHelper.geCacheKey(url, params);
+        return db.getCacheResult(key)
+                .flatMap(new Function<String, ObservableSource<String>>() {
+                    @Override
+                    public ObservableSource<String> apply(String s){
+                        if(TextUtils.isEmpty(s)){
+                            LogHelper.d("缓存无效，网络获取结果");
+                            return http.rxget(url, params, headers)
+                                    .doOnNext(new Consumer<String>() {
+                                        @Override
+                                        public void accept(String s){
+                                            db.addOrUpdateCache(key, s);
+                                        }
+                                    });
+                        }else{
+                            LogHelper.d("缓存有效，直接返回");
+                            return Observable.just(s);
+                        }
+                    }
+                });
+    }
+
     @Override
     public void getPoetry(int id) {
         String url = "http://192.168.1.186:5000/api/v1.0/poetry/1";
@@ -97,44 +128,52 @@ public class ApiImpl implements Api {
     @Override
     public void testGet() {
         final String url = "http://httpbin.org/get";
-        HashMap<String, String> params = new HashMap<>();
+        final HashMap<String, String> params = new HashMap<>();
         params.put("test1", "get1");
         params.put("test2", "get2");
 
-        HashMap<String, String> headers = new HashMap<>();
+        final HashMap<String, String> headers = new HashMap<>();
         headers.put("header1", "get3");
         headers.put("header2", "get4");
 
-        if(db.hasCache(url)){
-            Observable.create(new ObservableOnSubscribe<String>() {
-                @Override
-                public void subscribe(ObservableEmitter<String> emitter) throws Exception {
-                    String data = db.getCacheData(url);
-                    LogHelper.d("缓存结果");
-                    emitter.onNext(data);
-                    emitter.onComplete();
-                }
-            })
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(observer);
-        }else{
-            http.get(url, params, headers)
-                    .doOnNext(new Consumer<String>() {
-                        @Override
-                        public void accept(String s) throws Exception {
-                            LogHelper.d("网络结果缓存");
-                            CacheEntity cacheEntity = new CacheEntity();
-                            cacheEntity.setCacheTime(System.currentTimeMillis());
-                            cacheEntity.setData(s);
-                            cacheEntity.setKey(url);
-                            db.addOrUpdateCache(cacheEntity);
-                        }
-                    })
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(observer);
-        }
+        db.setExpiredTime(1000*60);
+
+        getCacheOrNet(url, params, headers)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+
+//
+//        if(db.checkCache(url)){
+//            Observable.create(new ObservableOnSubscribe<String>() {
+//                @Override
+//                public void subscribe(ObservableEmitter<String> emitter) throws Exception {
+//                    String data = db.getCacheData(url);
+//                    LogHelper.d("缓存结果");
+//                    emitter.onNext(data);
+//                    emitter.onComplete();
+//                }
+//            })
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(observer);
+//        }else{
+//            http.rxget(url, params, headers)
+//                    .doOnNext(new Consumer<String>() {
+//                        @Override
+//                        public void accept(String s) throws Exception {
+//                            LogHelper.d("网络结果缓存");
+//                            CacheEntity cacheEntity = new CacheEntity();
+//                            cacheEntity.setCacheTime(System.currentTimeMillis());
+//                            cacheEntity.setData(s);
+//                            cacheEntity.setKey(url);
+//                            db.addOrUpdateCache(cacheEntity);
+//                        }
+//                    })
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(observer);
+//        }
     }
 
     @Override
@@ -148,7 +187,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "head3");
         headers.put("header2", "head4");
 
-        http.head(url, params, headers)
+        http.rxhead(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -165,7 +204,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "delete3");
         headers.put("header2", "delete4");
 
-        http.delete(url, params, headers)
+        http.rxdelete(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -182,7 +221,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "post3");
         headers.put("header2", "post4");
 
-        http.post(url, params, headers)
+        http.rxpost(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -199,7 +238,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "put3");
         headers.put("header2", "put4");
 
-        http.put(url, params, headers)
+        http.rxput(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -216,7 +255,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "patch3");
         headers.put("header2", "patch4");
 
-        http.patch(url, params, headers)
+        http.rxpatch(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);

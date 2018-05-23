@@ -60,4 +60,8 @@ dependencies {
     implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-alpha-5'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.36'
 
+    implementation 'com.google.firebase:firebase-core:15.0.2'
+    implementation 'com.google.firebase:firebase-auth:15.1.0'
 }
+
+apply plugin: 'com.google.gms.google-services'

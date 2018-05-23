@@ -1,5 +1,7 @@
 package com.ruihuan.fastcommon.storage.db.entity;
 
+import android.support.annotation.NonNull;
+
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 

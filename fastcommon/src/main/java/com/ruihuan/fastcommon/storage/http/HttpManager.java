@@ -3,6 +3,8 @@ package com.ruihuan.fastcommon.storage.http;
 import android.content.Context;
 
 
+import com.blankj.utilcode.util.EncryptUtils;
+import com.ruihuan.fastcommon.helper.LogHelper;
 import com.ruihuan.fastcommon.storage.http.body.ProgressRequestBody;
 import com.ruihuan.fastcommon.storage.http.contants.RequestContants;
 import com.ruihuan.fastcommon.storage.http.lisenter.BaseLisenter;
@@ -24,6 +26,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
+
+import static com.ruihuan.fastcommon.storage.help.StorageHelper.encodeParameters;
 
 
 public class HttpManager {
@@ -78,7 +82,7 @@ public class HttpManager {
     }
 
     /**
-     * get request
+     * rxget request
      * @param url url
      * @param lisenter lisenter
      */
@@ -87,7 +91,7 @@ public class HttpManager {
     }
 
     /**
-     * get request with params
+     * rxget request with params
      * @param url url
      * @param params params
      * @param lisenter lisenter
@@ -97,7 +101,7 @@ public class HttpManager {
     }
 
     /**
-     * get request with params and header
+     * rxget request with params and header
      * @param url url
      * @param params params
      * @param headers headers
@@ -127,8 +131,8 @@ public class HttpManager {
      * @param headers
      * @return
      */
-    public Observable<String> get(final String url, final Map<String, String> params,
-                          final Map<String, String> headers) {
+    public Observable<String> rxget(final String url, final Map<String, String> params,
+                                    final Map<String, String> headers) {
         return Observable.create(new ObservableOnSubscribe<String>() {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
@@ -201,7 +205,7 @@ public class HttpManager {
      * @param headers
      * @return
      */
-    public Observable<String> head(final String url, final Map<String, String> params,
+    public Observable<String> rxhead(final String url, final Map<String, String> params,
                      final Map<String, String> headers) {
         return Observable.create(new ObservableOnSubscribe<String>() {
             @Override
@@ -280,7 +284,7 @@ public class HttpManager {
      * @param headers
      * @return
      */
-    public Observable<String> delete(final String url, final Map<String, String> params,
+    public Observable<String> rxdelete(final String url, final Map<String, String> params,
                        final Map<String, String> headers) {
         return Observable.create(new ObservableOnSubscribe<String>() {
             @Override
@@ -365,7 +369,7 @@ public class HttpManager {
      * @param headers
      * @return
      */
-    public Observable<String> post(final String url, final Map<String, String> params,
+    public Observable<String> rxpost(final String url, final Map<String, String> params,
                      final Map<String, String> headers) {
         return Observable.create(new ObservableOnSubscribe<String>() {
             @Override
@@ -451,7 +455,7 @@ public class HttpManager {
      * @param headers
      * @return
      */
-    public Observable<String> put(final String url, final Map<String, String> params,
+    public Observable<String> rxput(final String url, final Map<String, String> params,
                     final Map<String, String> headers) {
         return Observable.create(new ObservableOnSubscribe<String>() {
             @Override
@@ -537,7 +541,7 @@ public class HttpManager {
      * @param headers
      * @return
      */
-    public Observable<String> patch(final String url, final Map<String, String> params,
+    public Observable<String> rxpatch(final String url, final Map<String, String> params,
                       final Map<String, String> headers) {
         return Observable.create(new ObservableOnSubscribe<String>() {
             @Override
@@ -708,37 +712,5 @@ public class HttpManager {
      */
     public void setCommonHeaders(HashMap<String, String> commonHeaders) {
         this.commonHeaders = commonHeaders;
-    }
-
-    /**
-     * url 参数编码
-     * @param url url
-     * @param params params
-     * @return String
-     * @throws Exception
-     */
-    private String encodeParameters(String url, Map<String, String> params) throws Exception {
-        if (params == null || params.size() <= 0) {
-            return url;
-        }
-        StringBuilder encodedParams = new StringBuilder(url);
-        try {
-            if (!url.contains(RequestContants.REQUEST_QUESTION_HTTP)) {
-                encodedParams.append(RequestContants.REQUEST_QUESTION_HTTP);
-            } else {
-                encodedParams.append(RequestContants.REQUEST_ADD_HTTP);
-            }
-
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                encodedParams.append(URLEncoder.encode(entry.getKey(), RequestContants.REQUEST_ENCODING_HTTP));
-                encodedParams.append(RequestContants.REQUEST_EQ_HTTP);
-                encodedParams.append(URLEncoder.encode(entry.getValue(), RequestContants.REQUEST_ENCODING_HTTP));
-                encodedParams.append(RequestContants.REQUEST_ADD_HTTP);
-            }
-        } catch (UnsupportedEncodingException uee) {
-            throw new UnsupportedEncodingException("Encoding not supported: utf-8");
-        }
-        return encodedParams.toString().endsWith(RequestContants.REQUEST_ADD_HTTP) ?
-                encodedParams.substring(0, encodedParams.length() - 1) : encodedParams.toString();
     }
 }
