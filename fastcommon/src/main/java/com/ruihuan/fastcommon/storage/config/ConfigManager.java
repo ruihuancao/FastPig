@@ -9,31 +9,33 @@ import android.content.SharedPreferences;
  * Data：2018/4/25-15:21
  * Author: caoruihuan
  */
-public class AppConfig {
+public class ConfigManager {
 
-    private static final String PREF_NAME = "fast_pig";
-
-    private volatile static AppConfig instance;
-
+    private static final String PREF_DEFAULT_NAME = "pref_common";
+    private volatile static ConfigManager instance;
     private SharedPreferences mPref;
 
-    public AppConfig init(Context context){
-        mPref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+    public ConfigManager init(Context context){
+        mPref = context.getSharedPreferences(PREF_DEFAULT_NAME, Context.MODE_PRIVATE);
         return instance;
     }
 
-    private AppConfig() {
+    private ConfigManager() {
     }
 
-    public static AppConfig getInstance() {
+    public static ConfigManager getInstance() {
         if(instance == null){
-            synchronized (AppConfig.class){
+            synchronized (ConfigManager.class){
                 if(instance == null){
-                    instance = new AppConfig();
+                    instance = new ConfigManager();
                 }
             }
         }
         return instance;
+    }
+
+    public void setPrefName(Context context, String name){
+        mPref = context.getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
     public void setStringValue(String key, String value){
@@ -55,7 +57,6 @@ public class AppConfig {
     public boolean getBooleanValue(String key, boolean defaultValue){
         return mPref.getBoolean(key, defaultValue);
     }
-
 
     public boolean getBooleanValue(String key){
         return mPref.getBoolean(key, false);

@@ -1,8 +1,6 @@
 package com.ruihuan.fastpig.data;
 
 
-import com.ruihuan.fastcommon.storage.http.lisenter.GsonLisenter;
-import com.ruihuan.fastcommon.storage.http.lisenter.StringLisenter;
 
 /**
  * Description:
@@ -10,14 +8,6 @@ import com.ruihuan.fastcommon.storage.http.lisenter.StringLisenter;
  * Author: caoruihuan
  */
 public interface Api {
-
-    void getPoetry(int id);
-
-    void getPoetry(int id, StringLisenter stringLisenter);
-
-    void getPoetry(int id, GsonLisenter<TestBean> gsonLisenter);
-
-    void getTestPoetry(int id, GsonLisenter<BaseBean<PoetryDataBean>> gsonLisenter);
 
 
     void testGet();
@@ -29,6 +19,4 @@ public interface Api {
     void testPost();
 
     void testPut();
-
-    void testPatch();
 }

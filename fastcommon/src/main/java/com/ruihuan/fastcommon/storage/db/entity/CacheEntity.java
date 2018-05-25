@@ -1,6 +1,5 @@
 package com.ruihuan.fastcommon.storage.db.entity;
 
-import android.support.annotation.NonNull;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -21,6 +20,8 @@ public class CacheEntity {
     private String data;
 
     private long cacheTime;
+
+    private long expiredTime;
 
     public long getId() {
         return id;
@@ -52,5 +53,13 @@ public class CacheEntity {
 
     public void setCacheTime(long cacheTime) {
         this.cacheTime = cacheTime;
+    }
+
+    public long getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(long expiredTime) {
+        this.expiredTime = expiredTime;
     }
 }

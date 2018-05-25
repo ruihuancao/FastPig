@@ -2,8 +2,6 @@ package com.ruihuan.fastcommon.storage.http.lisenter;
 
 
 
-import com.ruihuan.fastcommon.storage.http.contants.RequestContants;
-
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -16,7 +14,7 @@ public abstract class BaseLisenter<T> implements Callback{
     @Override
     public void onFailure(Call call, IOException e) {
         e.printStackTrace();
-        onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+        onFailure(400, e.getMessage());
     }
 
     @Override
@@ -25,15 +23,15 @@ public abstract class BaseLisenter<T> implements Callback{
             onResponse(convert(call, response));
         }catch (Exception e){
             e.printStackTrace();
-            onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+            onFailure(400, e.getMessage());
         }
     }
 
-    public abstract T convert(Call call, Response response) throws IOException;
+    protected abstract T convert(Call call, Response response) throws IOException;
 
     public abstract void onFailure(int statusCode, String errorMessage);
 
-    public abstract void onResponse(T response);
+    protected abstract void onResponse(T response);
 
 
     public void onProgress(long currentBytes, long totalBytes){}

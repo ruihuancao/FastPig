@@ -1,42 +1,29 @@
 package com.ruihuan.fastpig.data;
 
-import android.text.TextUtils;
-
 import com.ruihuan.fastcommon.event.EventBusManager;
 import com.ruihuan.fastcommon.helper.LogHelper;
-import com.ruihuan.fastcommon.storage.db.DBManager;
-import com.ruihuan.fastcommon.storage.db.entity.CacheEntity;
-import com.ruihuan.fastcommon.storage.help.StorageHelper;
-import com.ruihuan.fastcommon.storage.http.HttpManager;
+import com.ruihuan.fastcommon.storage.StorageApi;
+import com.ruihuan.fastcommon.storage.StorageRequest;
 import com.ruihuan.fastcommon.storage.http.lisenter.GsonLisenter;
 import com.ruihuan.fastcommon.storage.http.lisenter.StringLisenter;
 import com.ruihuan.fastpig.DataEvent;
 
 
 import java.util.HashMap;
-import java.util.Map;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+
 
 /**
  * Description:
  * Data：2018/4/25-14:14
  * Author: caoruihuan
  */
-public class ApiImpl implements Api {
+public class ApiImpl extends StorageApi implements Api {
 
-    private HttpManager http;
-
-    private DBManager db;
 
     private Observer<String> observer = new Observer<String>() {
         @Override
@@ -62,67 +49,15 @@ public class ApiImpl implements Api {
     };
 
     public ApiImpl() {
-        this.http = HttpManager.getInstance();
-        this.db = DBManager.getInstance();
-    }
+        super();
+        final HashMap<String, String> commonparams = new HashMap<>();
+        commonparams.put("commonparams", "commonparams");
 
+        final HashMap<String, String> commonheaders = new HashMap<>();
+        commonheaders.put("commonheaders", "commonheaders");
 
-    private Observable<String> getCacheOrNet(final String url, final Map<String, String> params,
-                                            final Map<String, String> headers) {
-        final String key = StorageHelper.geCacheKey(url, params);
-        return db.getCacheResult(key)
-                .flatMap(new Function<String, ObservableSource<String>>() {
-                    @Override
-                    public ObservableSource<String> apply(String s){
-                        if(TextUtils.isEmpty(s)){
-                            LogHelper.d("缓存无效，网络获取结果");
-                            return http.rxget(url, params, headers)
-                                    .doOnNext(new Consumer<String>() {
-                                        @Override
-                                        public void accept(String s){
-                                            db.addOrUpdateCache(key, s);
-                                        }
-                                    });
-                        }else{
-                            LogHelper.d("缓存有效，直接返回");
-                            return Observable.just(s);
-                        }
-                    }
-                });
-    }
-
-    @Override
-    public void getPoetry(int id) {
-        String url = "http://192.168.1.186:5000/api/v1.0/poetry/1";
-        http.get(url, new StringLisenter() {
-            @Override
-            public void onFailure(int statusCode, String errorMessage) {
-                LogHelper.e(errorMessage);
-            }
-
-            @Override
-            public void onResponse(String response) {
-                LogHelper.d(response);
-            }
-        });
-    }
-
-    @Override
-    public void getPoetry(int id, StringLisenter stringLisenter) {
-        String url = "http://192.168.1.186:5000/api/v1.0/poetry/1";
-        http.get(url, stringLisenter);
-    }
-
-    @Override
-    public void getPoetry(int id, GsonLisenter<TestBean> gsonLisenter) {
-        String url = "http://192.168.1.186:5000/api/v1.0/poetry/1";
-        http.get(url, gsonLisenter);
-    }
-
-    @Override
-    public void getTestPoetry(int id, GsonLisenter<BaseBean<PoetryDataBean>> gsonLisenter) {
-        String url = "http://192.168.1.186:5000/api/v1.0/poetry/1";
-        http.get(url, gsonLisenter);
+        httpManager.setCommonParams(commonparams);
+        httpManager.setCommonHeaders(commonheaders);
     }
 
     @Override
@@ -136,44 +71,20 @@ public class ApiImpl implements Api {
         headers.put("header1", "get3");
         headers.put("header2", "get4");
 
-        db.setExpiredTime(1000*60);
+//        httpManager.rxget(url, params, headers)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(observer);
 
-        getCacheOrNet(url, params, headers)
+        StorageRequest storageRequest = StorageRequest.buildResquest()
+                .setUrl(url)
+                .addParams("test1", 1)
+                .addHeaders("header1", "header1")
+                .setMethod(StorageRequest.METHOD_GET);
+        rxReqeust(storageRequest)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
-
-//
-//        if(db.checkCache(url)){
-//            Observable.create(new ObservableOnSubscribe<String>() {
-//                @Override
-//                public void subscribe(ObservableEmitter<String> emitter) throws Exception {
-//                    String data = db.getCacheData(url);
-//                    LogHelper.d("缓存结果");
-//                    emitter.onNext(data);
-//                    emitter.onComplete();
-//                }
-//            })
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(observer);
-//        }else{
-//            http.rxget(url, params, headers)
-//                    .doOnNext(new Consumer<String>() {
-//                        @Override
-//                        public void accept(String s) throws Exception {
-//                            LogHelper.d("网络结果缓存");
-//                            CacheEntity cacheEntity = new CacheEntity();
-//                            cacheEntity.setCacheTime(System.currentTimeMillis());
-//                            cacheEntity.setData(s);
-//                            cacheEntity.setKey(url);
-//                            db.addOrUpdateCache(cacheEntity);
-//                        }
-//                    })
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(observer);
-//        }
     }
 
     @Override
@@ -187,7 +98,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "head3");
         headers.put("header2", "head4");
 
-        http.rxhead(url, params, headers)
+        httpManager.rxhead(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -204,7 +115,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "delete3");
         headers.put("header2", "delete4");
 
-        http.rxdelete(url, params, headers)
+        httpManager.rxdelete(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -221,7 +132,7 @@ public class ApiImpl implements Api {
         headers.put("header1", "post3");
         headers.put("header2", "post4");
 
-        http.rxpost(url, params, headers)
+        httpManager.rxpost(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
@@ -238,26 +149,10 @@ public class ApiImpl implements Api {
         headers.put("header1", "put3");
         headers.put("header2", "put4");
 
-        http.rxput(url, params, headers)
+        httpManager.rxput(url, params, headers)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
     }
 
-    @Override
-    public void testPatch() {
-        String url = "http://httpbin.org/patch";
-        HashMap<String, String> params = new HashMap<>();
-        params.put("test1", "patch1");
-        params.put("test2", "patch2");
-
-        HashMap<String, String> headers = new HashMap<>();
-        headers.put("header1", "patch3");
-        headers.put("header2", "patch4");
-
-        http.rxpatch(url, params, headers)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-    }
 }

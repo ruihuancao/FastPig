@@ -116,11 +116,10 @@ public class MainActivity extends BaseActivity {
     private void testHttp(){
         Api api = DataManager.getInstance().getApi();
         api.testGet();
-//        api.testHead();
-//        api.testDelete();
-//        api.testPatch();
-//        api.testPost();
-//        api.testPut();
+        api.testHead();
+        api.testDelete();
+        api.testPost();
+        api.testPut();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

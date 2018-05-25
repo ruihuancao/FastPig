@@ -1,10 +1,11 @@
 package com.ruihuan.fastcommon;
 
 import android.content.Context;
+import android.os.storage.StorageManager;
 
 import com.ruihuan.fastcommon.helper.LogHelper;
 import com.ruihuan.fastcommon.helper.UtilHelper;
-import com.ruihuan.fastcommon.storage.StorageInit;
+import com.ruihuan.fastcommon.storage.StorageApi;
 
 /**
  * Description:
@@ -16,6 +17,6 @@ public class CommonInit {
     public static void init(Context context){
         UtilHelper.init(context);
         LogHelper.init();
-        StorageInit.init(context);
+        StorageApi.init(context);
     }
 }

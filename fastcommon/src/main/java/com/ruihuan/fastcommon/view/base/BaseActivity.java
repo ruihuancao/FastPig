@@ -25,7 +25,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         LogHelper.d(TAG, getClass().getSimpleName() + "-------------onCreate");
         initParams();
         setContentView(getLayoutId());
-        EventBusManager.register(this);
         initView();
         initData();
     }
@@ -58,7 +57,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         LogHelper.d(TAG, getClass().getSimpleName() + "-------------onStop");
-        EventBusManager.unregister(this);
     }
 
     @Override

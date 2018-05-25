@@ -3,15 +3,10 @@ package com.ruihuan.fastcommon.storage.http;
 import android.content.Context;
 
 
-import com.blankj.utilcode.util.EncryptUtils;
-import com.ruihuan.fastcommon.helper.LogHelper;
 import com.ruihuan.fastcommon.storage.http.body.ProgressRequestBody;
-import com.ruihuan.fastcommon.storage.http.contants.RequestContants;
 import com.ruihuan.fastcommon.storage.http.lisenter.BaseLisenter;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -25,29 +20,21 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
 
-import static com.ruihuan.fastcommon.storage.help.StorageHelper.encodeParameters;
 
 
 public class HttpManager {
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 20;
     private static final int DEFAULT_READ_TIMEOUT = 20;
+
     private volatile static HttpManager instance;
 
     private OkHttpClient okHttpClient;
-    private boolean isLog = true;
-    private String host;
-
-    private HashMap<String, String> commonParmas;
+    private HashMap<String, String> commonParams;
     private HashMap<String, String> commonHeaders;
 
     private HttpManager() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(10, TimeUnit.SECONDS);
-        builder.readTimeout(10, TimeUnit.SECONDS);
-        okHttpClient = builder.build();
     }
 
     /**
@@ -56,12 +43,9 @@ public class HttpManager {
      */
     public HttpManager init(Context context){
         // log
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(isLog ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
-        okHttpClient = okHttpClient.newBuilder()
+        okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(DEFAULT_READ_TIMEOUT, TimeUnit.SECONDS)
-                .addInterceptor(logging)
                 .build();
         return instance;
     }
@@ -79,6 +63,36 @@ public class HttpManager {
             }
         }
         return instance;
+    }
+
+    public void setCommonHeaders(HashMap<String, String> commonHeaders) {
+        this.commonHeaders = commonHeaders;
+    }
+
+    public void setCommonParams(HashMap<String, String> commonParams) {
+        this.commonParams = commonParams;
+    }
+
+    public HashMap<String, String> commonParams(Map<String, String> params){
+        HashMap<String, String> resultParams = new HashMap<>();
+        if(params != null){
+            resultParams.putAll(params);
+        }
+        if(commonParams != null){
+            resultParams.putAll(commonParams);
+        }
+        return resultParams;
+    }
+
+    public HashMap<String, String> commonHeaders(Map<String, String> headers){
+        HashMap<String, String> resultHeaders = new HashMap<>();
+        if(headers != null){
+            resultHeaders.putAll(headers);
+        }
+        if(commonHeaders != null){
+            resultHeaders.putAll(commonHeaders);
+        }
+        return resultHeaders;
     }
 
     /**
@@ -110,17 +124,19 @@ public class HttpManager {
     public void get(String url, Map<String, String> params,
                     Map<String, String> headers, BaseLisenter lisenter) {
        try{
-           HashMap<String, String> resultParams  = commonParams(params);
-           HashMap<String, String> resultsHeaders = commonHeaders(headers);
-           String resultUrl = encodeParameters(getUrl(url), resultParams);
+           Map<String, String> resultParams = commonParams(params);
+           Map<String, String> resultHeaders = commonHeaders(headers);
+           String resultUrl = HttpHelper.encodeParameters(url, resultParams);
            Request.Builder builder = new Request.Builder();
            builder.url(resultUrl).get();
-           for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-               builder.addHeader(entry.getKey(), entry.getValue());
+           if (headers != null){
+               for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                   builder.addHeader(entry.getKey(), entry.getValue());
+               }
            }
            okHttpClient.newCall(builder.build()).enqueue(lisenter);
        }catch (Exception e){
-           lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+           lisenter.onFailure(400, e.getMessage());
        }
     }
 
@@ -137,13 +153,16 @@ public class HttpManager {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                 try{
-                    HashMap<String, String> resultParams  = commonParams(params);
-                    HashMap<String, String> resultsHeaders = commonHeaders(headers);
-                    String resultUrl = encodeParameters(getUrl(url), resultParams);
+                    Map<String, String> resultParams = commonParams(params);
+                    Map<String, String> resultHeaders = commonHeaders(headers);
+
+                    String resultUrl = HttpHelper.encodeParameters(url, resultParams);
                     Request.Builder builder = new Request.Builder();
                     builder.url(resultUrl).get();
-                    for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                        builder.addHeader(entry.getKey(), entry.getValue());
+                    if(resultHeaders != null){
+                        for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                            builder.addHeader(entry.getKey(), entry.getValue());
+                        }
                     }
                     Response response = okHttpClient.newCall(builder.build()).execute();
                     emitter.onNext(response.body().string());
@@ -184,17 +203,19 @@ public class HttpManager {
     public void head(String url, Map<String, String> params,
                      Map<String, String> headers, BaseLisenter lisenter) {
         try {
-            HashMap<String, String> resultParams  = commonParams(params);
-            HashMap<String, String> resultsHeaders = commonHeaders(headers);
-            String resultUrl = encodeParameters(getUrl(url), resultParams);
+            Map<String, String> resultParams = commonParams(params);
+            Map<String, String> resultHeaders = commonHeaders(headers);
+            String resultUrl = HttpHelper.encodeParameters(url, resultParams);
             Request.Builder builder = new Request.Builder();
             builder.url(resultUrl).head();
-            for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                builder.addHeader(entry.getKey(), entry.getValue());
+            if(resultHeaders!= null){
+                for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                    builder.addHeader(entry.getKey(), entry.getValue());
+                }
             }
             okHttpClient.newCall(builder.build()).enqueue(lisenter);
         } catch (Exception e) {
-            lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+            lisenter.onFailure(400, e.getMessage());
         }
     }
 
@@ -211,13 +232,15 @@ public class HttpManager {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                 try {
-                    HashMap<String, String> resultParams  = commonParams(params);
-                    HashMap<String, String> resultsHeaders = commonHeaders(headers);
-                    String resultUrl = encodeParameters(getUrl(url), resultParams);
+                    Map<String, String> resultParams = commonParams(params);
+                    Map<String, String> resultHeaders = commonHeaders(headers);
+                    String resultUrl = HttpHelper.encodeParameters(url, resultParams);
                     Request.Builder builder = new Request.Builder();
                     builder.url(resultUrl).head();
-                    for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                        builder.addHeader(entry.getKey(), entry.getValue());
+                    if(resultHeaders != null){
+                        for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                            builder.addHeader(entry.getKey(), entry.getValue());
+                        }
                     }
                     Response response = okHttpClient.newCall(builder.build()).execute();
                     emitter.onNext(response.headers().toString());
@@ -258,22 +281,25 @@ public class HttpManager {
     public void delete(String url, Map<String, String> params,
                        Map<String, String> headers, BaseLisenter lisenter) {
         try{
-            HashMap<String, String> resultParams  = commonParams(params);
-            HashMap<String, String> resultsHeaders = commonHeaders(headers);
-            String resultUrl = getUrl(url);
+            Map<String, String> resultParams = commonParams(params);
+            Map<String, String> resultHeaders = commonHeaders(headers);
+
             Request.Builder builder = new Request.Builder();
             FormBody.Builder paramsBuilder = new FormBody.Builder();
-            for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                paramsBuilder.add(entry.getKey(), entry.getValue());
+            if(resultParams != null){
+                for (Map.Entry<String, String> entry : resultParams.entrySet()) {
+                    paramsBuilder.add(entry.getKey(), entry.getValue());
+                }
             }
-            builder.url(resultUrl).delete(paramsBuilder.build());
-            // 添加header
-            for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                builder.addHeader(entry.getKey(), entry.getValue());
+            builder.url(url).delete(paramsBuilder.build());
+            if(resultHeaders != null){
+                for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                    builder.addHeader(entry.getKey(), entry.getValue());
+                }
             }
             okHttpClient.newCall(builder.build()).enqueue(lisenter);
         }catch (Exception e){
-            lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+            lisenter.onFailure(400, e.getMessage());
         }
     }
 
@@ -290,18 +316,21 @@ public class HttpManager {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                 try{
-                    HashMap<String, String> resultParams  = commonParams(params);
-                    HashMap<String, String> resultsHeaders = commonHeaders(headers);
-                    String resultUrl = getUrl(url);
+                    Map<String, String> resultParams = commonParams(params);
+                    Map<String, String> resultHeaders = commonHeaders(headers);
+
                     Request.Builder builder = new Request.Builder();
                     FormBody.Builder paramsBuilder = new FormBody.Builder();
-                    for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                        paramsBuilder.add(entry.getKey(), entry.getValue());
+                    if(resultParams != null){
+                        for (Map.Entry<String, String> entry : resultParams.entrySet()) {
+                            paramsBuilder.add(entry.getKey(), entry.getValue());
+                        }
                     }
-                    builder.url(resultUrl).delete(paramsBuilder.build());
-                    // 添加header
-                    for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                        builder.addHeader(entry.getKey(), entry.getValue());
+                    builder.url(url).delete(paramsBuilder.build());
+                    if(resultHeaders != null){
+                        for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                            builder.addHeader(entry.getKey(), entry.getValue());
+                        }
                     }
                     Response response = okHttpClient.newCall(builder.build()).execute();
                     emitter.onNext(response.body().string());
@@ -342,25 +371,65 @@ public class HttpManager {
     public void post(String url, Map<String, String> params,
                      Map<String, String> headers, BaseLisenter lisenter) {
         try{
-            HashMap<String, String> resultParams  = commonParams(params);
-            HashMap<String, String> resultsHeaders = commonHeaders(headers);
-            String resultUrl = getUrl(url);
+            Map<String, String> resultParams = commonParams(params);
+            Map<String, String> resultHeaders = commonHeaders(headers);
 
             Request.Builder builder = new Request.Builder();
             FormBody.Builder paramsBuilder = new FormBody.Builder();
-            for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                paramsBuilder.add(entry.getKey(), entry.getValue());
+            if(resultParams != null){
+                for (Map.Entry<String, String> entry : resultParams.entrySet()) {
+                    paramsBuilder.add(entry.getKey(), entry.getValue());
+                }
             }
-            builder.url(resultUrl).post(paramsBuilder.build());
+            builder.url(url).post(paramsBuilder.build());
             // 添加header
-            for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                builder.addHeader(entry.getKey(), entry.getValue());
+            if(resultHeaders != null){
+                for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                    builder.addHeader(entry.getKey(), entry.getValue());
+                }
             }
             okHttpClient.newCall(builder.build()).enqueue(lisenter);
         }catch (Exception e){
-            lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+            lisenter.onFailure(400, e.getMessage());
         }
     }
+
+
+    public void post(String url, Map<String, String> params,
+                       Map<String, String> headers, Map<String, File> files,
+                       BaseLisenter lisenter){
+        try{
+            Map<String, String> resultParams = commonParams(params);
+            Map<String, String> resultHeaders = commonHeaders(headers);
+            Request.Builder builder = new Request.Builder();
+            MultipartBody.Builder paramsBuilder = new MultipartBody.Builder();
+            //设置类型
+            paramsBuilder.setType(MultipartBody.FORM);
+            //追加参数
+            if(resultParams != null){
+                for (Map.Entry<String, String> entry : resultParams.entrySet()){
+                    paramsBuilder.addFormDataPart(entry.getKey(), entry.getValue());
+                }
+            }
+            // 添加file
+            if(files != null){
+                for (Map.Entry<String, File> entry : files.entrySet()){
+                    paramsBuilder.addFormDataPart(entry.getKey(), entry.getValue().getName(), RequestBody.create(null, entry.getValue()));
+                }
+            }
+            builder.url(url).post(new ProgressRequestBody(paramsBuilder.build(), lisenter));
+            // 添加header
+            if(resultHeaders != null){
+                for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                    builder.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
+            okHttpClient.newCall(builder.build()).enqueue(lisenter);
+        }catch (Exception e){
+            lisenter.onFailure(400, e.getMessage());
+        }
+    }
+
 
     /**
      *
@@ -375,19 +444,21 @@ public class HttpManager {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                 try{
-                    HashMap<String, String> resultParams  = commonParams(params);
-                    HashMap<String, String> resultsHeaders = commonHeaders(headers);
-                    String resultUrl = getUrl(url);
-
+                    Map<String, String> resultParams = commonParams(params);
+                    Map<String, String> resultHeaders = commonHeaders(headers);
                     Request.Builder builder = new Request.Builder();
                     FormBody.Builder paramsBuilder = new FormBody.Builder();
-                    for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                        paramsBuilder.add(entry.getKey(), entry.getValue());
+                    if(resultParams != null){
+                        for (Map.Entry<String, String> entry : resultParams.entrySet()) {
+                            paramsBuilder.add(entry.getKey(), entry.getValue());
+                        }
                     }
-                    builder.url(resultUrl).post(paramsBuilder.build());
+                    builder.url(url).post(paramsBuilder.build());
                     // 添加header
-                    for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                        builder.addHeader(entry.getKey(), entry.getValue());
+                    if(resultHeaders != null){
+                        for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                            builder.addHeader(entry.getKey(), entry.getValue());
+                        }
                     }
                     Response response = okHttpClient.newCall(builder.build()).execute();
                     emitter.onNext(response.body().string());
@@ -428,23 +499,25 @@ public class HttpManager {
     public void put(String url, Map<String, String> params,
                      Map<String, String> headers, BaseLisenter lisenter) {
         try{
-            HashMap<String, String> resultParams  = commonParams(params);
-            HashMap<String, String> resultsHeaders = commonHeaders(headers);
-            String resultUrl = getUrl(url);
-
+            Map<String, String> resultParams = commonParams(params);
+            Map<String, String> resultHeaders = commonHeaders(headers);
             Request.Builder builder = new Request.Builder();
             FormBody.Builder paramsBuilder = new FormBody.Builder();
-            for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                paramsBuilder.add(entry.getKey(), entry.getValue());
+            if(resultParams != null){
+                for (Map.Entry<String, String> entry : resultParams.entrySet()) {
+                    paramsBuilder.add(entry.getKey(), entry.getValue());
+                }
             }
-            builder.url(resultUrl).put(paramsBuilder.build());
+            builder.url(url).put(paramsBuilder.build());
             // 添加header
-            for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                builder.addHeader(entry.getKey(), entry.getValue());
+            if(resultHeaders != null){
+                for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                    builder.addHeader(entry.getKey(), entry.getValue());
+                }
             }
             okHttpClient.newCall(builder.build()).enqueue(lisenter);
         }catch (Exception e){
-            lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
+            lisenter.onFailure(400, e.getMessage());
         }
     }
 
@@ -461,19 +534,22 @@ public class HttpManager {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) throws Exception {
                 try{
-                    HashMap<String, String> resultParams  = commonParams(params);
-                    HashMap<String, String> resultsHeaders = commonHeaders(headers);
-                    String resultUrl = getUrl(url);
+                    Map<String, String> resultParams = commonParams(params);
+                    Map<String, String> resultHeaders = commonHeaders(headers);
 
                     Request.Builder builder = new Request.Builder();
                     FormBody.Builder paramsBuilder = new FormBody.Builder();
-                    for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                        paramsBuilder.add(entry.getKey(), entry.getValue());
+                    if(resultParams != null){
+                        for (Map.Entry<String, String> entry : resultParams.entrySet()) {
+                            paramsBuilder.add(entry.getKey(), entry.getValue());
+                        }
                     }
-                    builder.url(resultUrl).put(paramsBuilder.build());
+                    builder.url(url).put(paramsBuilder.build());
                     // 添加header
-                    for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                        builder.addHeader(entry.getKey(), entry.getValue());
+                    if(resultHeaders != null){
+                        for (Map.Entry<String, String> entry : resultHeaders.entrySet()){
+                            builder.addHeader(entry.getKey(), entry.getValue());
+                        }
                     }
                     Response response = okHttpClient.newCall(builder.build()).execute();
                     emitter.onNext(response.body().string());
@@ -483,234 +559,5 @@ public class HttpManager {
                 }
             }
         });
-    }
-
-    /**
-     *
-     * @param url
-     * @param lisenter
-     */
-    public void patch(String url, BaseLisenter lisenter) {
-        patch(url, null, lisenter);
-    }
-
-    /**
-     *
-     * @param url
-     * @param params
-     * @param lisenter
-     */
-    public void patch(String url, Map<String, String> params, BaseLisenter lisenter) {
-        post(url, params, null, lisenter);
-    }
-
-    /**
-     *
-     * @param url
-     * @param params
-     * @param headers
-     * @param lisenter
-     */
-    public void patch(String url, Map<String, String> params,
-                      Map<String, String> headers, BaseLisenter lisenter) {
-        try{
-            HashMap<String, String> resultParams  = commonParams(params);
-            HashMap<String, String> resultsHeaders = commonHeaders(headers);
-            String resultUrl = getUrl(url);
-
-            Request.Builder builder = new Request.Builder();
-            FormBody.Builder paramsBuilder = new FormBody.Builder();
-            for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                paramsBuilder.add(entry.getKey(), entry.getValue());
-            }
-            builder.url(resultUrl).patch(paramsBuilder.build());
-            // 添加header
-            for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                builder.addHeader(entry.getKey(), entry.getValue());
-            }
-            okHttpClient.newCall(builder.build()).enqueue(lisenter);
-        }catch (Exception e){
-            lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
-        }
-    }
-
-    /**
-     *
-     * @param url
-     * @param params
-     * @param headers
-     * @return
-     */
-    public Observable<String> rxpatch(final String url, final Map<String, String> params,
-                      final Map<String, String> headers) {
-        return Observable.create(new ObservableOnSubscribe<String>() {
-            @Override
-            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
-                try{
-                    HashMap<String, String> resultParams  = commonParams(params);
-                    HashMap<String, String> resultsHeaders = commonHeaders(headers);
-                    String resultUrl = getUrl(url);
-
-                    Request.Builder builder = new Request.Builder();
-                    FormBody.Builder paramsBuilder = new FormBody.Builder();
-                    for (Map.Entry<String, String> entry : resultParams.entrySet()) {
-                        paramsBuilder.add(entry.getKey(), entry.getValue());
-                    }
-                    builder.url(resultUrl).patch(paramsBuilder.build());
-                    // 添加header
-                    for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                        builder.addHeader(entry.getKey(), entry.getValue());
-                    }
-                    Response response = okHttpClient.newCall(builder.build()).execute();
-                    emitter.onNext(response.body().string());
-                    emitter.onComplete();
-                }catch (Exception e){
-                    emitter.onError(e);
-                }
-            }
-        });
-    }
-
-    /**
-     *
-     * @param url
-     * @param files
-     * @param lisenter
-     */
-    public void upload(String url, Map<String, File> files,
-                       BaseLisenter lisenter){
-        upload(url, null, files, lisenter);
-    }
-
-    /**
-     *
-     * @param url
-     * @param params
-     * @param files
-     * @param lisenter
-     */
-    public void upload(String url, Map<String, String> params, Map<String, File> files,
-                       BaseLisenter lisenter){
-        upload(url, params, null, files, lisenter);
-    }
-
-    /**
-     *
-     * @param url
-     * @param params
-     * @param headers
-     * @param files
-     * @param lisenter
-     */
-    public void upload(String url, Map<String, String> params,
-                       Map<String, String> headers, Map<String, File> files,
-                       BaseLisenter lisenter){
-        try{
-            HashMap<String, String> resultParams  = commonParams(params);
-            HashMap<String, String> resultsHeaders = commonHeaders(headers);
-            String resultUrl = getUrl(url);
-            Request.Builder builder = new Request.Builder();
-            MultipartBody.Builder paramsBuilder = new MultipartBody.Builder();
-            //设置类型
-            paramsBuilder.setType(MultipartBody.FORM);
-            //追加参数
-            for (Map.Entry<String, String> entry : resultParams.entrySet()){
-                paramsBuilder.addFormDataPart(entry.getKey(), entry.getValue());
-            }
-            // 添加file
-            for (Map.Entry<String, File> entry : files.entrySet()){
-                paramsBuilder.addFormDataPart(entry.getKey(), entry.getValue().getName(), RequestBody.create(null, entry.getValue()));
-            }
-            builder.url(resultUrl).post(new ProgressRequestBody(paramsBuilder.build(), lisenter));
-            // 添加header
-            for (Map.Entry<String, String> entry : resultsHeaders.entrySet()){
-                builder.addHeader(entry.getKey(), entry.getValue());
-            }
-            okHttpClient.newCall(builder.build()).enqueue(lisenter);
-        }catch (Exception e){
-            lisenter.onFailure(RequestContants.REQUEST_ERROR_CODE, e.getMessage());
-        }
-    }
-
-    /**
-     *
-     * @param url
-     * @return
-     */
-    private String getUrl(String url){
-        //host+url
-        if(url.startsWith(RequestContants.REQUEST_START_HTTP)){
-            return url;
-        }
-        return String.format("%s%s", host, url);
-    }
-
-    /**
-     * add common headers
-     * @param headers headers
-     * @return map
-     */
-    private HashMap<String, String> commonHeaders(Map<String, String> headers){
-        HashMap<String, String> resultHeaders = new HashMap<>();
-        if(commonHeaders != null){
-            resultHeaders.putAll(commonHeaders);
-        }
-        if(headers != null){
-            resultHeaders.putAll(headers);
-        }
-        return resultHeaders;
-    }
-
-    /**
-     * add common params
-     * @param params params
-     * @return map
-     */
-    private HashMap<String, String> commonParams(Map<String, String> params){
-        HashMap<String, String> resultParmas = new HashMap<>();
-        if(commonParmas != null){
-            resultParmas.putAll(commonParmas);
-        }
-        if(params != null){
-            resultParmas.putAll(params);
-        }
-        return resultParmas;
-    }
-
-    /**
-     * logging
-     * @param isLog islog
-     */
-    public void isLog(boolean isLog){
-        if(this.isLog == isLog){
-            return;
-        }
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(isLog ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
-        okHttpClient = okHttpClient.newBuilder().addInterceptor(logging).build();
-    }
-
-    /**
-     * set host
-     * @param host
-     */
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    /**
-     * 设置公共参数
-     * @param commonParmas
-     */
-    public void setCommonParmas(HashMap<String, String> commonParmas) {
-        this.commonParmas = commonParmas;
-    }
-
-    /**
-     * 设置公共信息
-     * @param commonHeaders
-     */
-    public void setCommonHeaders(HashMap<String, String> commonHeaders) {
-        this.commonHeaders = commonHeaders;
     }
 }

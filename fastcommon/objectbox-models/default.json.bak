@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:2196287710484186235",
-      "lastPropertyId": "5:290540757801121182",
+      "lastPropertyId": "4:1790925323980584853",
       "name": "CacheEntity",
       "properties": [
         {
@@ -23,10 +23,6 @@
         {
           "id": "4:1790925323980584853",
           "name": "cacheTime"
-        },
-        {
-          "id": "5:290540757801121182",
-          "name": "expiredTime"
         }
       ],
       "relations": []

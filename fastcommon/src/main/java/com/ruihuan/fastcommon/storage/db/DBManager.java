@@ -9,6 +9,8 @@ import com.ruihuan.fastcommon.storage.db.entity.CacheEntity_;
 import com.ruihuan.fastcommon.storage.db.entity.MyObjectBox;
 
 
+import java.util.Date;
+
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.query.Query;
@@ -23,11 +25,8 @@ public class DBManager {
     private BoxStore boxStore;
     Box<CacheEntity> cacheBox;
 
-    private long expiredTime;
-
     public DBManager init(Context context){
         boxStore = MyObjectBox.builder().androidContext(context).build();
-        expiredTime = 1000*60*3;
         return instance;
     }
 
@@ -56,15 +55,8 @@ public class DBManager {
         return cacheBox;
     }
 
-    public long getExpiredTime() {
-        return expiredTime;
-    }
 
-    public void setExpiredTime(long expiredTime) {
-        this.expiredTime = expiredTime;
-    }
-    
-    public long addOrUpdateCache(String key, String data){
+    public long putCache(String key, String data, long expiredTime){
         Box<CacheEntity> box = getCacheBox();
         CacheEntity cacheEntity;
         if(hasCache(key)){
@@ -78,16 +70,10 @@ public class DBManager {
         cacheEntity.setKey(key);
         cacheEntity.setData(data);
         cacheEntity.setCacheTime(System.currentTimeMillis());
+        cacheEntity.setExpiredTime(System.currentTimeMillis() + expiredTime);
         return box.put(cacheEntity);
     }
-    
-    public CacheEntity getCacheEntity(String key){
-        Box<CacheEntity> box = getCacheBox();
-        Query<CacheEntity> query = box.query()
-                .equal(CacheEntity_.key, key)
-                .build();
-        return query.findFirst();
-    }
+
 
     public String getCacheData(String key){
         Box<CacheEntity> box = getCacheBox();
@@ -101,6 +87,14 @@ public class DBManager {
         return null;
     }
 
+    public CacheEntity getCacheEntity(String key){
+        Box<CacheEntity> box = getCacheBox();
+        Query<CacheEntity> query = box.query()
+                .equal(CacheEntity_.key, key)
+                .build();
+        return query.findFirst();
+    }
+
     private boolean hasCache(String key){
         Box<CacheEntity> box = getCacheBox();
         Query<CacheEntity> query = box.query()
@@ -108,6 +102,7 @@ public class DBManager {
                 .build();
         return query.count() > 0;
     }
+
 
     public boolean checkCache(String key){
         boolean flag = false;
@@ -117,9 +112,9 @@ public class DBManager {
                     .equal(CacheEntity_.key, key)
                     .build();
             CacheEntity cacheEntity = query.findFirst();
-            long expired = System.currentTimeMillis() - cacheEntity.getCacheTime();
-            LogHelper.d("缓存有效剩余时间："+(getExpiredTime() - expired));
-            if(expired < getExpiredTime()){
+            LogHelper.d("缓存有效时间："+ new Date(cacheEntity.getExpiredTime()));
+            LogHelper.d("缓存创建时间："+ new Date(cacheEntity.getCacheTime()));
+            if(cacheEntity.getExpiredTime() > System.currentTimeMillis()){
                 flag = true;
             }
         }

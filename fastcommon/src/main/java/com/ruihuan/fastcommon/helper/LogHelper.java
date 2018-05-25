@@ -10,7 +10,7 @@ import com.orhanobut.logger.PrettyFormatStrategy;
 
 public class LogHelper {
 
-    public static final String TAG = "LogHelper";
+    public static final String TAG = LogHelper.class.getSimpleName();
 
     private static boolean showLog = false;
 
