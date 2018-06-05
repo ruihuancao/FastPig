@@ -23,8 +23,16 @@ public class PremissionHelper {
         request(listener, PermissionConstants.CAMERA);
     }
 
+    public static void requestCamera(final OnPermissionGrantedListener listener, final OnPermissionDeniedListener deniedListener) {
+        request(listener, deniedListener, PermissionConstants.CAMERA);
+    }
+
     public static void requestStorage(final OnPermissionGrantedListener listener) {
         request(listener, PermissionConstants.STORAGE);
+    }
+
+    public static void requestStorage(final OnPermissionGrantedListener listener, final OnPermissionDeniedListener deniedListener) {
+        request(listener, deniedListener, PermissionConstants.STORAGE);
     }
 
     public static void requestPhone(final OnPermissionGrantedListener listener) {

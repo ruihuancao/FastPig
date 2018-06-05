@@ -107,8 +107,8 @@ public class DownloadService extends Service {
 
 
         mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID);
-        mBuilder.setContentTitle("开始下载")
-                .setContentText("正在连接服务器")
+        mBuilder.setContentTitle(getResources().getString(R.string.fastupdate_download))
+                .setContentText(getResources().getString(R.string.fastupdate_connection))
                 .setSmallIcon(R.drawable.fastupdate_update_icon)
                 .setLargeIcon(AppUpdateUtils.drawableToBitmap(AppUpdateUtils.getAppIcon(DownloadService.this)))
                 .setOngoing(true)
@@ -126,7 +126,7 @@ public class DownloadService extends Service {
 
         String apkUrl = updateApp.getApkFileUrl();
         if (TextUtils.isEmpty(apkUrl)) {
-            String contentText = "新版本下载路径错误";
+            String contentText = "download error";
             stop(contentText);
             return;
         }
@@ -257,7 +257,7 @@ public class DownloadService extends Service {
                 }
 
                 if (mBuilder != null) {
-                    mBuilder.setContentTitle("正在下载：" + AppUpdateUtils.getAppName(DownloadService.this))
+                    mBuilder.setContentTitle(getResources().getString(R.string.fastupdate_download_resume, AppUpdateUtils.getAppName(DownloadService.this)))
                             .setContentText(rate + "%")
                             .setProgress(100, rate, false)
                             .setWhen(System.currentTimeMillis());
@@ -302,14 +302,16 @@ public class DownloadService extends Service {
                     //App前台运行
                     mNotificationManager.cancel(NOTIFY_ID);
 
-                    if (mCallBack != null) {
-                        boolean temp = mCallBack.onInstallAppAndAppOnForeground(file);
-                        if (!temp) {
-                            AppUpdateUtils.installApp(DownloadService.this, file);
-                        }
-                    } else {
-                        AppUpdateUtils.installApp(DownloadService.this, file);
-                    }
+//                    if (mCallBack != null) {
+//                        boolean temp = mCallBack.onInstallAppAndAppOnForeground(file);
+//                        if (!temp) {
+//                        }
+//                    } else {
+//                        AppUpdateUtils.installApp(DownloadService.this, file);
+//                    }
+
+                    AppUpdateUtils.installApp(DownloadService.this, file);
+
 
 
                 } else {
@@ -319,7 +321,7 @@ public class DownloadService extends Service {
                     PendingIntent contentIntent = PendingIntent.getActivity(DownloadService.this, 0, installAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                     mBuilder.setContentIntent(contentIntent)
                             .setContentTitle(AppUpdateUtils.getAppName(DownloadService.this))
-                            .setContentText("下载完成，请点击安装")
+                            .setContentText(getResources().getString(R.string.fastupdate_download_finsh))
                             .setProgress(0, 0, false)
                             //                        .setAutoCancel(true)
                             .setDefaults((Notification.DEFAULT_ALL));

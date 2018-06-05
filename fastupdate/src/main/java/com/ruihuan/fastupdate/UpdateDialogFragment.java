@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -170,18 +171,18 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
             final String targetSize = mUpdateApp.getTargetSize();
             final String updateLog = mUpdateApp.getUpdateLog();
 
-            String msg = "";
+//            String msg = "";
 
-            if (!TextUtils.isEmpty(targetSize)) {
-                msg = getResources().getString(R.string.fastupdate_size, targetSize);
-            }
-
-            if (!TextUtils.isEmpty(updateLog)) {
-                msg += updateLog;
-            }
+//            if (!TextUtils.isEmpty(targetSize)) {
+//                msg = getResources().getString(R.string.fastupdate_size, targetSize);
+//            }
+//
+//            if (!TextUtils.isEmpty(updateLog)) {
+//                msg += updateLog;
+//            }
 
             //更新内容
-            mContentTextView.setText(msg);
+            mContentTextView.setText(Html.fromHtml(updateLog));
             //标题
             mTitleTextView.setText(TextUtils.isEmpty(dialogTitle) ? getResources().getString(R.string.fastupdate_title, newVersion) : dialogTitle);
             //强制更新
@@ -231,11 +232,9 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
      */
     private void setDialogTheme(int color, int topResId) {
         mTopIv.setImageResource(topResId);
-        mUpdateOkButton.setBackgroundDrawable(DrawableUtil.getDrawable(AppUpdateUtils.dip2px(4, getActivity()), color));
+        mUpdateOkButton.setBackgroundDrawable(DrawableUtil.getDrawable(AppUpdateUtils.dip2px(20, getActivity()), color));
         mNumberProgressBar.setProgressTextColor(color);
         mNumberProgressBar.setReachedBarColor(color);
-        //随背景颜色变化
-        mUpdateOkButton.setTextColor(ColorUtil.isTextColorDark(color) ? Color.BLACK : Color.WHITE);
     }
 
     private void initEvents() {
@@ -368,7 +367,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
                         if (mUpdateApp.isConstraint()) {
                             showInstallBtn(file);
                         } else {
-                            dismissAllowingStateLoss();
+                            //dismissAllowingStateLoss();
                         }
                     }
                     return true;
@@ -384,9 +383,6 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
                 @Override
                 public boolean onInstallAppAndAppOnForeground(File file) {
                     AppUpdateUtils.installApp(UpdateDialogFragment.this.getActivity(), file);
-                    if (!mUpdateApp.isConstraint()) {
-                        dismiss();
-                    }
                     return true;
                 }
             });
@@ -394,13 +390,18 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
     }
 
     private void showInstallBtn(final File file) {
-        mNumberProgressBar.setVisibility(View.GONE);
-        mUpdateOkButton.setText(getResources().getString(R.string.fastupdate_install));
-        mUpdateOkButton.setVisibility(View.VISIBLE);
-        mUpdateOkButton.setOnClickListener(new View.OnClickListener() {
+        mUpdateOkButton.post(new Runnable() {
             @Override
-            public void onClick(View v) {
-                AppUpdateUtils.installApp(UpdateDialogFragment.this, file);
+            public void run() {
+                mNumberProgressBar.setVisibility(View.GONE);
+                mUpdateOkButton.setText(getResources().getString(R.string.fastupdate_install));
+                mUpdateOkButton.setVisibility(View.VISIBLE);
+                mUpdateOkButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AppUpdateUtils.installApp(UpdateDialogFragment.this, file);
+                    }
+                });
             }
         });
     }

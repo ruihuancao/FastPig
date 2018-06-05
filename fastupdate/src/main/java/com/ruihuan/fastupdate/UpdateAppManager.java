@@ -89,7 +89,6 @@ public class UpdateAppManager {
             return true;
         }
         if (TextUtils.isEmpty(mTargetPath)) {
-            Log.e(TAG, "下载路径错误:" + mTargetPath);
             return true;
         }
         return mUpdateApp == null;
@@ -152,7 +151,7 @@ public class UpdateAppManager {
 
         if (DownloadService.isRunning || UpdateDialogFragment.isShow) {
             callback.onAfter();
-            Toast.makeText(mActivity, "app正在更新", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mActivity, getContext().getResources().getString(R.string.fastupdate_update_resume), Toast.LENGTH_SHORT).show();
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -242,11 +241,11 @@ public class UpdateAppManager {
                 //是否已经下载，如果已经下载直接提示安装
                 //没有则进行下载，监听下载完成，弹出安装对话框
             } else {
-                callback.noNewApp("没有新版本");
+                callback.noNewApp("no new version");
             }
         } catch (Exception ignored) {
             ignored.printStackTrace();
-            callback.noNewApp(String.format("解析自定义更新配置消息出错[%s]", ignored.getMessage()));
+            callback.noNewApp(String.format("error message[%s]", ignored.getMessage()));
         }
     }
 

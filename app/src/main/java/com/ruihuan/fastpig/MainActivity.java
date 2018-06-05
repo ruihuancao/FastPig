@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 
@@ -24,6 +25,7 @@ import cn.sharesdk.onekeyshare.OnekeyShare;
 public class MainActivity extends BaseActivity {
 
     private TextView mTextMessage;
+    private Button updateButton;
     private StringBuilder stringBuilder = new StringBuilder();
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -60,6 +62,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initView() {
         mTextMessage = (TextView) findViewById(R.id.message);
+        updateButton = (Button)findViewById(R.id.update_button);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         PremissionHelper.requestCamera(new PremissionHelper.OnPermissionGrantedListener() {
@@ -69,7 +72,7 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        mTextMessage.setOnClickListener(new View.OnClickListener() {
+        updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 update();
@@ -97,12 +100,13 @@ public class MainActivity extends BaseActivity {
     }
 
     private void update(){
-        String updateUrl = "https://raw.githubusercontent.com/WVector/AppUpdateDemo/master/json/json.txt";
+        String updateUrl = "http://version-control.mobibookapp.com/api/checkAppVersion?app_version=1.0&app_key=$2y$10$Sk5KdNw3J75wWLkpZtmxouzmE6dEtIEE9KoXCP7/NqU.PQg6BdRYK";
         new UpdateAppManager
                 .Builder()
                 .setActivity(this)
                 .setUpdateUrl(updateUrl)
                 .setHttpManager(new UpdateHttpImpl())
+                .setThemeColor(getResources().getColor(R.color.update_color))
                 .build()
                 .update();
     }
