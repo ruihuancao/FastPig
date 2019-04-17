@@ -1,1 +1,1 @@
-include ':app', ':fastcommon', ':fastupdate', ':fastshare'
+include ':app', ':fastcommon', ':fastupdate'

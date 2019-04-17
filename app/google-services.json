@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "841079201461",
+    "firebase_url": "https://fastpig-81d3b.firebaseio.com",
+    "project_id": "fastpig-81d3b",
+    "storage_bucket": "fastpig-81d3b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:841079201461:android:3f0c75f947a14fba",
+        "android_client_info": {
+          "package_name": "com.ruihuan.fastpig"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "841079201461-vp8smkpusqj3pn8ltqdgh05r9g05dn93.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ruihuan.fastpig",
+            "certificate_hash": "c40577df0290a08bbeccc3ea90829215d362926c"
+          }
+        },
+        {
+          "client_id": "841079201461-lv0jihq2ag1aho7h10ojmen731kbhus9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2QObX9bqpSSZRZQYHmdbQf4JuSu8bPjQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "841079201461-lv0jihq2ag1aho7h10ojmen731kbhus9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
